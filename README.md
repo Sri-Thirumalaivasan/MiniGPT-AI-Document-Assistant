@@ -1,5 +1,7 @@
 # MiniGPT – AI Document Assistant
 
+🚀 Live Demo: https://mini-gpt-ai-document-assistant.vercel.app/
+
 A lightweight, locally running AI-powered document assistant that lets users upload PDF documents and ask questions using a local large language model (LLM).
 
 MiniGPT uses a retrieval-augmented generation (RAG) workflow: it extracts PDF text, splits it into chunks, retrieves relevant passages, and sends those passages to a locally running Ollama model.
