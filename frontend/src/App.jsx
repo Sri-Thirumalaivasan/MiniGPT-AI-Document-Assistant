@@ -15,7 +15,7 @@ import {
 import "./App.css";
 
 const API = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-const MODEL_LABEL = "Qwen 2.5 · 1.5B";
+const MODEL_LABEL = "Gemini AI";
 
 function App() {
   const [document, setDocument] = useState(null);
