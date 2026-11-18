@@ -1,82 +1,39 @@
 # MiniGPT – AI Document Assistant
 
-A lightweight, locally running AI-powered document assistant that allows users to upload PDF documents and ask questions using a Local Large Language Model (LLM).
+A lightweight, locally running AI-powered document assistant that lets users upload PDF documents and ask questions using a local large language model (LLM).
 
-MiniGPT uses Retrieval-Augmented Generation (RAG) to retrieve relevant document content and generate context-based answers without relying on cloud-based LLM APIs.
+MiniGPT uses a retrieval-augmented generation (RAG) workflow: it extracts PDF text, splits it into chunks, retrieves relevant passages, and sends those passages to a locally running Ollama model.
 
 ## Features
 
-- PDF document upload
-- PDF text extraction
+- PDF document upload and text extraction
 - Automatic text chunking
-- Relevant document context retrieval
-- AI-powered question answering
-- Local LLM integration using Ollama
-- React-based chat interface
-- FastAPI backend
-- Retrieved document context display
-- Answers questions using uploaded document content
-- Handles questions when relevant information is unavailable
+- TF-IDF-based relevant context retrieval
+- AI-powered question answering using local Ollama
+- React chat interface and FastAPI backend
+- Retrieved document context displayed with answers
+- Handles questions when relevant information is unavailable in retrieved context
 
-## Technology Stack
+## Technology stack
 
 | Component | Technology |
 |---|---|
 | Frontend | React, Vite |
 | Backend | Python, FastAPI |
-| LLM Runtime | Ollama |
-| Language Model | Qwen 2.5 1.5B |
-| Document Processing | PyMuPDF |
-| HTTP Client | Axios |
-| UI Icons | Lucide React |
+| LLM runtime | Ollama |
+| Language model | Qwen 2.5 1.5B |
+| PDF processing | PyMuPDF |
+| Retrieval | scikit-learn TF-IDF and cosine similarity |
+| HTTP client | Axios |
+| UI icons | Lucide React |
 
-## Architecture
-
-```text
-                 USER
-                   |
-                   v
-           React Frontend
-                   |
-                   v
-             FastAPI Backend
-                   |
-                   v
-             PDF Processing
-                   |
-                   v
-             Text Extraction
-                   |
-                   v
-             Text Chunking
-                   |
-                   v
-          Relevant Context Retrieval
-                   |
-                   v
-             Ollama Local LLM
-                   |
-                   v
-             Qwen 2.5 1.5B
-                   |
-                   v
-             Generated Answer
-                   |
-                   v
-              React UI
-```
-
-## Project Structure
+## Project structure
 
 ```text
-MiniGPT/
-│
+MiniGPT-AI-Document-Assistant/
 ├── backend/
 │   ├── main.py
-│   ├── requirements.txt
-│   ├── uploads/
-│   └── venv/
-│
+│   └── requirements.txt
 ├── frontend/
 │   ├── public/
 │   ├── src/
@@ -86,175 +43,123 @@ MiniGPT/
 │   │   ├── index.css
 │   │   └── main.jsx
 │   ├── package.json
+│   ├── package-lock.json
 │   └── vite.config.js
-│
 ├── .gitignore
 └── README.md
 ```
 
-## Prerequisites
+Uploaded files are stored locally under `backend/uploads/` at runtime. This directory, virtual environments, Python cache files, and PDF files are excluded from Git.
 
-Install the following:
+## Prerequisites
 
 - Python 3.10 or later
 - Node.js and npm
-- Ollama
+- [Ollama](https://ollama.com/)
 - Git
 
-## Installation and Setup
+## Installation and setup
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/MiniGPT-AI-Document-Assistant.git
+git clone https://github.com/Sri-Thirumalaivasan/MiniGPT-AI-Document-Assistant.git
 cd MiniGPT-AI-Document-Assistant
 ```
 
 ### 2. Download the local language model
 
+Make sure Ollama is installed and running, then execute:
+
 ```bash
 ollama pull qwen2.5:1.5b
-```
-
-Verify the model:
-
-```bash
 ollama list
 ```
 
-### 3. Setup the backend
+### 3. Set up the backend
+
+From the repository root:
 
 ```powershell
 cd backend
-
 python -m venv venv
-
 .\venv\Scripts\Activate.ps1
-
 pip install -r requirements.txt
-```
-
-Start FastAPI:
-
-```bash
 uvicorn main:app --reload --port 8000
 ```
 
-Backend API:
+The API runs at `http://127.0.0.1:8000`.
 
-`http://127.0.0.1:8000`
+Interactive API documentation: `http://127.0.0.1:8000/docs`.
 
-API documentation:
+### 4. Set up the frontend
 
-`http://127.0.0.1:8000/docs`
-
-### 4. Setup the frontend
-
-Open a second terminal:
+Open a second terminal from the repository root:
 
 ```powershell
 cd frontend
-
 npm install
-
 npm run dev
 ```
 
-Frontend:
+Open the Vite URL shown in the terminal (normally `http://localhost:5173`).
 
-`http://localhost:5173`
-
-## API Endpoints
+## API endpoints
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/health` | Check backend health |
-| POST | `/upload` | Upload a PDF |
-| POST | `/ask` | Ask a question about a document |
+| GET | `/` | Basic API status |
+| GET | `/health` | Check backend and Ollama availability |
+| POST | `/upload` | Upload and process a PDF |
+| POST | `/ask` | Ask a question about an uploaded document |
 
-### Upload PDF
+### Upload a PDF
 
-Endpoint:
+Send a `multipart/form-data` request to `/upload` with a `file` field containing the PDF.
 
-`POST /upload`
+### Ask a question
 
-Request type: `multipart/form-data`
-
-Parameter: `file`
-
-### Ask a Question
-
-Endpoint:
-
-`POST /ask`
-
-Example request:
+Send JSON to `/ask`:
 
 ```json
 {
-  "document_id": "YOUR_DOCUMENT_ID",
+  "document_id": "DOCUMENT_ID_FROM_UPLOAD",
   "question": "Summarize this document."
 }
 ```
 
-## Testing
+## Notes and limitations
 
-The MVP was tested with a sample PDF resume.
+- The current implementation keeps document chunk metadata in memory. Restarting the backend clears the active document sessions; upload the PDF again after a restart.
+- Uploaded PDFs are stored locally in `backend/uploads/`. Do not commit private documents or real user uploads.
+- The frontend currently expects the backend at `http://127.0.0.1:8000` and uses the Vite development origin `http://localhost:5173` for CORS.
+- Ollama must be running locally and the configured model must be available before asking questions.
+- Retrieval uses TF-IDF and cosine similarity; answer quality depends on the extracted PDF text and retrieved context.
 
-Test cases:
+## Future improvements
 
-1. Generate a summary of the uploaded document.
-2. Ask for information that is not present in the document.
-3. Ask technical questions about the candidate's experience.
-4. Retrieve factual information such as university and CGPA.
-
-The application successfully returned document-based answers and indicated when requested information was unavailable.
-
-## Hardware Considerations
-
-This project was developed and tested on a computer with:
-
-- 8 GB RAM
-- Integrated graphics
-- Local CPU-based LLM inference
-
-A lightweight 1.5B-parameter model was selected to support local execution on modest hardware.
-
-## Future Improvements
-
-- Support multiple PDF documents
+- Multiple document sessions and persistent document metadata
 - Conversation history
 - Page-level source citations
 - Downloadable AI summaries
 - Improved Markdown response rendering
-- Document management
-- Enhanced retrieval accuracy
+- Document management and configurable backend URL
+- More advanced semantic retrieval
 
-## Privacy
-
-MiniGPT uses a locally running Ollama model for inference. Uploaded documents are processed by the local backend.
-
-For this development version, document storage is local and should not be treated as permanent storage.
-
-## Learning Outcomes
+## Learning outcomes
 
 This project demonstrates practical experience with:
 
-- Large Language Models (LLMs)
-- Retrieval-Augmented Generation (RAG)
+- Large language models and local inference
+- Retrieval-augmented generation concepts
 - Prompt engineering
-- PDF processing
-- Python backend development
+- PDF processing and text chunking
+- Python backend development with FastAPI
 - React frontend development
 - REST API integration
-- Running AI models locally
 
 ## Author
 
 **Sri Thirumalai Vasan S**
 
 GitHub: https://github.com/Sri-Thirumalaivasan
-
----
-
-If you find this project useful, consider giving it a star!
