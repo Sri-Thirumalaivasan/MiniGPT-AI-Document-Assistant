@@ -22,8 +22,7 @@ MiniGPT uses a retrieval-augmented generation (RAG) workflow: it extracts PDF te
 |---|---|
 | Frontend | React, Vite |
 | Backend | Python, FastAPI |
-| LLM runtime | Ollama |
-| Language model | Qwen 2.5 1.5B |
+| API | Gemini API |
 | PDF processing | PyMuPDF |
 | Retrieval | scikit-learn TF-IDF and cosine similarity |
 | HTTP client | Axios |
